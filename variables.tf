@@ -41,9 +41,9 @@ EOT
         frequency = string
         interval  = number
         schedule = optional(object({
-          hours      = optional(set(string))
-          minutes    = optional(set(string))
-          month_days = optional(set(string))
+          hours      = optional(set(number))
+          minutes    = optional(set(number))
+          month_days = optional(set(number))
           monthly = optional(object({
             week    = number
             weekday = string
