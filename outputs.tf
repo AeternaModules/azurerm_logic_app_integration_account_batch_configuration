@@ -1,3 +1,7 @@
+output "logic_app_integration_account_batch_configurations_id" {
+  description = "Map of id values across all logic_app_integration_account_batch_configurations, keyed the same as var.logic_app_integration_account_batch_configurations"
+  value       = { for k, v in azurerm_logic_app_integration_account_batch_configuration.logic_app_integration_account_batch_configurations : k => v.id }
+}
 output "logic_app_integration_account_batch_configurations_batch_group_name" {
   description = "Map of batch_group_name values across all logic_app_integration_account_batch_configurations, keyed the same as var.logic_app_integration_account_batch_configurations"
   value       = { for k, v in azurerm_logic_app_integration_account_batch_configuration.logic_app_integration_account_batch_configurations : k => v.batch_group_name }
