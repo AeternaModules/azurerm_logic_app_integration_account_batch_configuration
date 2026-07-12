@@ -23,7 +23,7 @@ resource "azurerm_logic_app_integration_account_batch_configuration" "logic_app_
             minutes    = schedule.value.minutes
             month_days = schedule.value.month_days
             dynamic "monthly" {
-              for_each = schedule.value.monthly != null ? [schedule.value.monthly] : []
+              for_each = schedule.value.monthly != null ? schedule.value.monthly : []
               content {
                 week    = monthly.value.week
                 weekday = monthly.value.weekday

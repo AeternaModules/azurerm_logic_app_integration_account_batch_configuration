@@ -44,10 +44,10 @@ EOT
           hours      = optional(set(number))
           minutes    = optional(set(number))
           month_days = optional(set(number))
-          monthly = optional(object({
+          monthly = optional(list(object({
             week    = number
             weekday = string
-          }))
+          })))
           week_days = optional(set(string))
         }))
         start_time = optional(string)
@@ -55,54 +55,6 @@ EOT
       }))
     })
   }))
-  validation {
-    condition = alltrue([
-      for k, v in var.logic_app_integration_account_batch_configurations : (
-        v.release_criteria.batch_size == null || (v.release_criteria.batch_size >= 1 && v.release_criteria.batch_size <= 83886080)
-      )
-    ])
-    error_message = "must be between 1 and 83886080"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.logic_app_integration_account_batch_configurations : (
-        v.release_criteria.message_count == null || (v.release_criteria.message_count >= 1 && v.release_criteria.message_count <= 8000)
-      )
-    ])
-    error_message = "must be between 1 and 8000"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.logic_app_integration_account_batch_configurations : (
-        v.release_criteria.recurrence == null || (v.release_criteria.recurrence.interval >= 1 && v.release_criteria.recurrence.interval <= 100)
-      )
-    ])
-    error_message = "must be between 1 and 100"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.logic_app_integration_account_batch_configurations : (
-        v.release_criteria.recurrence == null || (v.release_criteria.recurrence.schedule == null || (v.release_criteria.recurrence.schedule.hours == null || (v.release_criteria.recurrence.schedule.hours >= 0 && v.release_criteria.recurrence.schedule.hours <= 23)))
-      )
-    ])
-    error_message = "must be between 0 and 23"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.logic_app_integration_account_batch_configurations : (
-        v.release_criteria.recurrence == null || (v.release_criteria.recurrence.schedule == null || (v.release_criteria.recurrence.schedule.minutes == null || (v.release_criteria.recurrence.schedule.minutes >= 0 && v.release_criteria.recurrence.schedule.minutes <= 59)))
-      )
-    ])
-    error_message = "must be between 0 and 59"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.logic_app_integration_account_batch_configurations : (
-        v.metadata == null || (length(v.metadata) > 0)
-      )
-    ])
-    error_message = "must not be empty"
-  }
   # --- Unconfirmed validation candidates, derived from azurerm_logic_app_integration_account_batch_configuration's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
@@ -139,10 +91,25 @@ EOT
   #   source:    [from validate.IntegrationAccountBatchConfigurationBatchGroupName: invalid when len(value) > 80]
   # path: batch_group_name
   #   source:    [from validate.IntegrationAccountBatchConfigurationBatchGroupName] !regexp.MustCompile(`^[A-Za-z0-9-_().]+$`).MatchString(v)
+  # path: release_criteria.batch_size
+  #   condition: value >= 1 && value <= 83886080
+  #   message:   must be between 1 and 83886080
+  # path: release_criteria.message_count
+  #   condition: value >= 1 && value <= 8000
+  #   message:   must be between 1 and 8000
   # path: release_criteria.recurrence.frequency
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: release_criteria.recurrence.interval
+  #   condition: value >= 1 && value <= 100
+  #   message:   must be between 1 and 100
   # path: release_criteria.recurrence.end_time
   #   source:    validation.IsRFC3339Time(...) - no translation rule yet, add one
+  # path: release_criteria.recurrence.schedule.hours[*]
+  #   condition: value >= 0 && value <= 23
+  #   message:   must be between 0 and 23
+  # path: release_criteria.recurrence.schedule.minutes[*]
+  #   condition: value >= 0 && value <= 59
+  #   message:   must be between 0 and 59
   # path: release_criteria.recurrence.schedule.month_days[*]
   #   source:    validation.All(...) - no translation rule yet, add one
   # path: release_criteria.recurrence.schedule.monthly.weekday
@@ -155,5 +122,8 @@ EOT
   #   source:    validation.IsRFC3339Time(...) - no translation rule yet, add one
   # path: release_criteria.recurrence.time_zone
   #   source:    validate.BatchConfigurationRecurrenceTimeZone: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
+  # path: metadata[*]
+  #   condition: length(value) > 0
+  #   message:   must not be empty
 }
 
