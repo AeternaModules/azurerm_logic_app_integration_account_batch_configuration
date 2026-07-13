@@ -55,75 +55,78 @@ EOT
       }))
     })
   }))
-  # --- Unconfirmed validation candidates, derived from azurerm_logic_app_integration_account_batch_configuration's provider source ---
-  # Not auto-enabled: either a bespoke provider validator we can't safely translate,
-  # or a path that crosses a list-typed block (needs its own for_each wrapping).
-  # Review, translate into a real validation{} block above, and delete once confirmed.
-  # path: name
-  #   source:    [from validate.IntegrationAccountBatchConfigurationName] !ok
-  # path: name
-  #   condition: length(value) <= 20
-  #   message:   [from validate.IntegrationAccountBatchConfigurationName: invalid when len(value) > 20]
-  #   source:    [from validate.IntegrationAccountBatchConfigurationName: invalid when len(value) > 20]
-  # path: name
-  #   source:    [from validate.IntegrationAccountBatchConfigurationName] !regexp.MustCompile(`^[A-Za-z0-9]+$`).MatchString(v)
-  # path: resource_group_name
-  #   condition: length(value) <= 90
-  #   message:   [from resourcegroups.ValidateName: invalid when len(value) > 90]
-  #   source:    [from resourcegroups.ValidateName: invalid when len(value) > 90]
-  # path: resource_group_name
-  #   condition: !endswith(value, ".")
-  #   message:   [from resourcegroups.ValidateName: must not end with "."]
-  #   source:    [from resourcegroups.ValidateName: must not end with "."]
-  # path: resource_group_name
-  #   condition: length(value) != 0
-  #   message:   [from resourcegroups.ValidateName: invalid when len(value) == 0]
-  #   source:    [from resourcegroups.ValidateName: invalid when len(value) == 0]
-  # path: resource_group_name
-  #   source:    [from resourcegroups.ValidateName] !matched
-  # path: integration_account_name
-  #   source:    validate.IntegrationAccountName: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
-  # path: batch_group_name
-  #   source:    [from validate.IntegrationAccountBatchConfigurationBatchGroupName] !ok
-  # path: batch_group_name
-  #   condition: length(value) <= 80
-  #   message:   [from validate.IntegrationAccountBatchConfigurationBatchGroupName: invalid when len(value) > 80]
-  #   source:    [from validate.IntegrationAccountBatchConfigurationBatchGroupName: invalid when len(value) > 80]
-  # path: batch_group_name
-  #   source:    [from validate.IntegrationAccountBatchConfigurationBatchGroupName] !regexp.MustCompile(`^[A-Za-z0-9-_().]+$`).MatchString(v)
-  # path: release_criteria.batch_size
-  #   condition: value >= 1 && value <= 83886080
-  #   message:   must be between 1 and 83886080
-  # path: release_criteria.message_count
-  #   condition: value >= 1 && value <= 8000
-  #   message:   must be between 1 and 8000
-  # path: release_criteria.recurrence.frequency
-  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
-  # path: release_criteria.recurrence.interval
-  #   condition: value >= 1 && value <= 100
-  #   message:   must be between 1 and 100
-  # path: release_criteria.recurrence.end_time
-  #   source:    validation.IsRFC3339Time(...) - no translation rule yet, add one
-  # path: release_criteria.recurrence.schedule.hours[*]
-  #   condition: value >= 0 && value <= 23
-  #   message:   must be between 0 and 23
-  # path: release_criteria.recurrence.schedule.minutes[*]
-  #   condition: value >= 0 && value <= 59
-  #   message:   must be between 0 and 59
-  # path: release_criteria.recurrence.schedule.month_days[*]
-  #   source:    validation.All(...) - no translation rule yet, add one
-  # path: release_criteria.recurrence.schedule.monthly.weekday
-  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
-  # path: release_criteria.recurrence.schedule.monthly.week
-  #   source:    validation.All(...) - no translation rule yet, add one
-  # path: release_criteria.recurrence.schedule.week_days[*]
-  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
-  # path: release_criteria.recurrence.start_time
-  #   source:    validation.IsRFC3339Time(...) - no translation rule yet, add one
-  # path: release_criteria.recurrence.time_zone
-  #   source:    validate.BatchConfigurationRecurrenceTimeZone: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
-  # path: metadata[*]
-  #   condition: length(value) > 0
-  #   message:   must not be empty
+  validation {
+    condition = alltrue([
+      for k, v in var.logic_app_integration_account_batch_configurations : (
+        length(v.resource_group_name) <= 90
+      )
+    ])
+    error_message = "[from resourcegroups.ValidateName: invalid when len(value) > 90]"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.logic_app_integration_account_batch_configurations : (
+        !endswith(v.resource_group_name, ".")
+      )
+    ])
+    error_message = "[from resourcegroups.ValidateName: must not end with \".\"]"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.logic_app_integration_account_batch_configurations : (
+        length(v.resource_group_name) != 0
+      )
+    ])
+    error_message = "[from resourcegroups.ValidateName: invalid when len(value) == 0]"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.logic_app_integration_account_batch_configurations : (
+        v.release_criteria.batch_size == null || (v.release_criteria.batch_size >= 1 && v.release_criteria.batch_size <= 83886080)
+      )
+    ])
+    error_message = "must be between 1 and 83886080"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.logic_app_integration_account_batch_configurations : (
+        v.release_criteria.message_count == null || (v.release_criteria.message_count >= 1 && v.release_criteria.message_count <= 8000)
+      )
+    ])
+    error_message = "must be between 1 and 8000"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.logic_app_integration_account_batch_configurations : (
+        v.release_criteria.recurrence == null || (v.release_criteria.recurrence.interval >= 1 && v.release_criteria.recurrence.interval <= 100)
+      )
+    ])
+    error_message = "must be between 1 and 100"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.logic_app_integration_account_batch_configurations : (
+        v.release_criteria.recurrence == null || (v.release_criteria.recurrence.schedule == null || (v.release_criteria.recurrence.schedule.hours == null || (alltrue([for x in v.release_criteria.recurrence.schedule.hours : x >= 0 && x <= 23]))))
+      )
+    ])
+    error_message = "must be between 0 and 23"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.logic_app_integration_account_batch_configurations : (
+        v.release_criteria.recurrence == null || (v.release_criteria.recurrence.schedule == null || (v.release_criteria.recurrence.schedule.minutes == null || (alltrue([for x in v.release_criteria.recurrence.schedule.minutes : x >= 0 && x <= 59]))))
+      )
+    ])
+    error_message = "must be between 0 and 59"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.logic_app_integration_account_batch_configurations : (
+        v.metadata == null || (alltrue([for x in v.metadata : length(x) > 0]))
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  # Note: 16 additional provider-side validators are enforced at apply time but not mirrored as validation{} blocks here (bespoke or non-mechanically-translatable).
 }
 
