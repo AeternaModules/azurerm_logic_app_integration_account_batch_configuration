@@ -20,7 +20,7 @@ output "logic_app_integration_account_batch_configurations_name" {
 }
 output "logic_app_integration_account_batch_configurations_release_criteria" {
   description = "Map of release_criteria values across all logic_app_integration_account_batch_configurations, keyed the same as var.logic_app_integration_account_batch_configurations"
-  value       = { for k, v in azurerm_logic_app_integration_account_batch_configuration.logic_app_integration_account_batch_configurations : k => v.release_criteria if v.release_criteria != null && length(v.release_criteria) > 0 }
+  value       = { for k, v in azurerm_logic_app_integration_account_batch_configuration.logic_app_integration_account_batch_configurations : k => one(v.release_criteria) if v.release_criteria != null && length(v.release_criteria) > 0 }
 }
 output "logic_app_integration_account_batch_configurations_resource_group_name" {
   description = "Map of resource_group_name values across all logic_app_integration_account_batch_configurations, keyed the same as var.logic_app_integration_account_batch_configurations"
